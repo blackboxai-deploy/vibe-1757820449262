@@ -1,0 +1,181 @@
+import { NextResponse } from 'next/server';
+import { Activity } from '@/types';
+
+// Mock activities data - in production this would fetch from Google Drive
+const mockActivities: { activities: Activity[] } = {
+  activities: [
+    {
+      id: "trancoso_full_day",
+      name: "Trancoso Full Day", 
+      category: "mais_procurados",
+      type: "full_day",
+      duration: "8 horas",
+      pricing: { adu: 95, chd: 65, inf: 0 },
+      deposit: { adu: 25, chd: 15, inf: 0 },
+      min_adults: 1,
+      max_capacity: 40,
+      description: "Conheça a charmosa vila de Trancoso, suas praias paradisíacas e o famoso Quadrado. Inclui tempo livre para almoço e compras.",
+      schedule: "Saída: 8h30 | Retorno: 17h30",
+      includes: ["Transporte", "Guia"],
+      excludes: ["Almoço", "Bebidas", "Consumo nas cabanas"]
+    },
+    {
+      id: "praia_espelho",
+      name: "Praia do Espelho",
+      category: "mais_procurados",
+      type: "full_day", 
+      duration: "8 horas",
+      pricing: { adu: 120, chd: 85, inf: 0 },
+      deposit: { adu: 25, chd: 15, inf: 0 },
+      min_adults: 1,
+      max_capacity: 35,
+      description: "Uma das praias mais bonitas do Brasil! Águas cristalinas, piscinas naturais e coqueirais. Tempo livre para relaxar e curtir.",
+      schedule: "Saída: 8h00 | Retorno: 18h00",
+      includes: ["Transporte", "Guia"],
+      excludes: ["Almoço", "Bebidas", "Cadeiras/Guarda-sol"]
+    },
+    {
+      id: "caraiva_aventura",
+      name: "Caraíva - Vila de Pescadores",
+      category: "experiencias",
+      type: "full_day",
+      duration: "9 horas", 
+      pricing: { adu: 110, chd: 75, inf: 0 },
+      deposit: { adu: 30, chd: 20, inf: 0 },
+      min_adults: 2,
+      max_capacity: 25,
+      description: "Aventura pela vila rústica de Caraíva. Travessia de balsa, caminhada pela vila sem carros e praia selvagem.",
+      schedule: "Saída: 7h30 | Retorno: 18h30",
+      includes: ["Transporte", "Guia", "Travessia de balsa"],
+      excludes: ["Almoço", "Bebidas"]
+    },
+    {
+      id: "cidade_historica",
+      name: "Cidade Histórica + Passarela do Álcool",
+      category: "mais_procurados",
+      type: "half_day",
+      duration: "4 horas",
+      pricing: { adu: 45, chd: 30, inf: 0 },
+      deposit: { adu: 15, chd: 10, inf: 0 },
+      min_adults: 1,
+      max_capacity: 50,
+      description: "Conheça a história do Descobrimento do Brasil e curta a famosa vida noturna na Passarela do Álcool.",
+      schedule: "Saída: 14h00 | Retorno: 18h00",
+      includes: ["Transporte", "Guia"],
+      excludes: ["Bebidas", "Souvenirs"]
+    },
+    {
+      id: "recife_corais",
+      name: "Recife de Corais - Mergulho",
+      category: "maritimos",
+      type: "half_day",
+      duration: "4 horas",
+      pricing: { adu: 85, chd: 60, inf: 0 },
+      deposit: { adu: 25, chd: 15, inf: 0 },
+      min_adults: 2,
+      max_capacity: 20,
+      description: "Mergulho com snorkel nos recife de corais. Veja peixes tropicais e corais coloridos em águas cristalinas.",
+      schedule: "Saída: 8h00 | Retorno: 13h00",
+      includes: ["Transporte", "Equipamentos", "Guia de mergulho"],
+      excludes: ["Almoço", "Bebidas"],
+      requirements: ["Saber namar", "Idade mínima: 8 anos"]
+    },
+    {
+      id: "quadriciclo_praia",
+      name: "Quadriciclo pelas Praias",
+      category: "quadriciclos", 
+      type: "half_day",
+      duration: "3 horas",
+      pricing: { adu: 95, chd: 0, inf: 0 },
+      min_adults: 1,
+      max_capacity: 15,
+      description: "Aventura de quadriciclo pelas praias desertas. Adrenalina e paisagens incríveis! CNH obrigatória.",
+      schedule: "Saída: 14h00 | Retorno: 17h00",
+      includes: ["Quadriciclo", "Equipamentos de segurança", "Guia"],
+      excludes: ["Combustível extra"],
+      requirements: ["CNH obrigatória", "Idade mínima: 18 anos", "Apenas adultos"]
+    },
+    {
+      id: "transfer_aeroporto",
+      name: "Transfer Aeroporto ⇄ Hotel", 
+      category: "transfers",
+      type: "transfer",
+      duration: "1 hora",
+      pricing: { adu: 25, chd: 25, inf: 0 },
+      min_adults: 1,
+      max_capacity: 6,
+      description: "Transfer privativo do aeroporto até seu hotel. Conforto e segurança para sua chegada.",
+      includes: ["Veículo privativo", "Motorista", "Ar condicionado"],
+      excludes: ["Paradas extras"]
+    },
+    {
+      id: "passeio_escuna",
+      name: "Passeio de Escuna - Recifes",
+      category: "maritimos",
+      type: "full_day",
+      duration: "6 horas", 
+      pricing: { adu: 75, chd: 50, inf: 0 },
+      deposit: { adu: 20, chd: 15, inf: 0 },
+      min_adults: 2,
+      max_capacity: 80,
+      description: "Navegue pelas águas cristalinas a bordo de uma escuna. Paradas para banho e mergulho livre nos recifes.",
+      schedule: "Saída: 9h00 | Retorno: 16h00",
+      includes: ["Escuna", "Equipamentos de mergulho", "Música ao vivo"],
+      excludes: ["Almoço", "Bebidas a bordo"]
+    },
+    {
+      id: "pacote_completo_3dias",
+      name: "Pacote Completo 3 Dias",
+      category: "pacotes",
+      type: "full_day",
+      duration: "3 dias",
+      pricing: { adu: 250, chd: 180, inf: 0 },
+      deposit: { adu: 80, chd: 60, inf: 0 },
+      min_adults: 2,
+      max_capacity: 25,
+      description: "Pacote com os 3 principais destinos: Trancoso, Praia do Espelho e Caraíva. Ideal para conhecer o melhor da região!",
+      includes: ["Transporte todos os dias", "Guia especializado", "Roteiro otimizado"],
+      excludes: ["Refeições", "Bebidas", "Entradas extras"]
+    },
+    {
+      id: "experiencia_gastronomica",
+      name: "Experiência Gastronômica Baiana",
+      category: "experiencias",
+      type: "half_day",
+      duration: "4 horas",
+      pricing: { adu: 65, chd: 45, inf: 0 },
+      deposit: { adu: 20, chd: 15, inf: 0 },
+      min_adults: 1,
+      max_capacity: 30,
+      description: "Degustação de pratos típicos baianos em restaurantes locais. Aprenda sobre a cultura culinária regional!",
+      schedule: "Saída: 18h00 | Retorno: 22h00",
+      includes: ["Transporte", "Degustações", "Guia gastronômico"],
+      excludes: ["Bebidas alcoólicas", "Refeição completa"]
+    }
+  ]
+};
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get('category');
+    
+    let activities = mockActivities.activities;
+    
+    // Filter by category if provided
+    if (category && category !== 'all') {
+      activities = activities.filter(activity => activity.category === category);
+    }
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 150));
+    
+    return NextResponse.json({ activities });
+  } catch (error) {
+    console.error('Error fetching activities:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch activities' },
+      { status: 500 }
+    );
+  }
+}
